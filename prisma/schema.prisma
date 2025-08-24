@@ -1,0 +1,53 @@
+//1:1 relationship between user and profile
+//1:N relationship between user and post
+//N:M relationship between post and category
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id      String   @id @unique @default(uuid())
+  email   String   @unique
+  name    String?
+  posts   Post[]
+  profile Profile?
+}
+
+model Profile {
+  id     String  @id @unique @default(uuid())
+  bio    String?
+  user   User?    @relation(fields: [userId], references: [id])
+  userId String?  @unique
+}
+
+model Post {
+  id         String             @id @unique @default(uuid())
+  slug       String             @unique
+  title      String
+  body       String
+  author     User?              @relation(fields: [authorId], references: [id])
+  authorId   String?
+  categories CategoriesOnPost[]
+}
+
+model Category {
+  id    String             @id @default(uuid())
+  name  String             @unique
+  posts CategoriesOnPost[]
+}
+
+model CategoriesOnPost {
+  post       Post     @relation(fields: [postId], references: [id])
+  postId     String
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+
+  @@id([postId, categoryId])
+  
+}
